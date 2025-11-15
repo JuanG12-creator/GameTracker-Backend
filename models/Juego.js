@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-//const Reseña = require("./Reseña");
 
 const juegoSchema = new mongoose.Schema(
   {

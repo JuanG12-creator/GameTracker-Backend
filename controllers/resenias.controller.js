@@ -3,83 +3,56 @@ const Resenia = require("../models/Resenia.js");
 // Obtener todas las reseñas
 exports.obtenerResenias = async (req, res) => {
   try {
-    const resenias = await Resenia.find()
-      .populate("usuario", "nombre avatar")
-      .populate("juego", "titulo plataforma");
+    const resenias = await Resenia.find();
     res.json(resenias);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener las reseñas", error: error.message });
+    res.status(500).json({ mensaje: "Error al obtener reseñas" });
   }
 };
 
-//  Obtener reseña por ID
+// Obtener una reseña
 exports.obtenerReseniaPorId = async (req, res) => {
   try {
-    const resenia = await Resenia.findById(req.params.id)
-      .populate("usuario", "nombre avatar")
-      .populate("juego", "titulo plataforma");
-    if (!resenia) return res.status(404).json({ mensaje: "Reseña no encontrada" });
+    const resenia = await Resenia.findById(req.params.id);
+    if (!resenia) return res.status(404).json({ mensaje: "No encontrada" });
+
     res.json(resenia);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener la reseña", error: error.message });
+    res.status(500).json({ mensaje: "Error al obtener reseña" });
   }
 };
 
-//  Crear una nueva reseña
+// Crear reseña
 exports.crearResenia = async (req, res) => {
   try {
-    const { juego, texto, puntuacion } = req.body;
+    const nueva = new Resenia(req.body);
+    await nueva.save();
 
-    const nuevaResenia = new Resenia({
-      usuario: req.usuario.id, // viene del middleware de autenticación
-      juego,
-      texto,
-      puntuacion,
-    });
-
-    await nuevaResenia.save();
-    res.status(201).json({ mensaje: "Reseña creada correctamente", reseña: nuevaResenia });
+    res.status(201).json(nueva);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al crear la reseña", error: error.message });
+    res.status(500).json({ mensaje: "Error al crear reseña" });
   }
 };
 
-// Actualizar reseña
+// Editar reseña
 exports.actualizarResenia = async (req, res) => {
   try {
-    const resenia = await Resenia.findById(req.params.id);
-    if (!resenia) return res.status(404).json({ mensaje: "Reseña no encontrada" });
+    const resenia = await Resenia.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
-    // Validar que solo el autor pueda modificar su reseña
-    if (resenia.usuario.toString() !== req.usuario.id) {
-      return res.status(403).json({ mensaje: "No tienes permiso para editar esta reseña" });
-    }
-
-    const { texto, puntuacion } = req.body;
-    resenia.texto = texto || resenia.texto;
-    resenia.puntuacion = puntuacion || resenia.puntuacion;
-    await resenia.save();
-
-    res.json({ mensaje: "Reseña actualizada correctamente", resenia });
+    res.json(resenia);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al actualizar la reseña", error: error.message });
+    res.status(500).json({ mensaje: "Error al editar reseña" });
   }
 };
 
 // Eliminar reseña
 exports.eliminarResenia = async (req, res) => {
   try {
-    const resenia = await Resenia.findById(req.params.id);
-    if (!resenia) return res.status(404).json({ mensaje: "Reseña no encontrada" });
-
-    // Validar que solo el autor pueda eliminarla
-    if (resenia.usuario.toString() !== req.usuario.id) {
-      return res.status(403).json({ mensaje: "No tienes permiso para eliminar esta reseña" });
-    }
-
-    await resenia.deleteOne();
-    res.json({ mensaje: "Reseña eliminada correctamente" });
+    await Resenia.findByIdAndDelete(req.params.id);
+    res.json({ mensaje: "Reseña eliminada" });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al eliminar la reseña", error: error.message });
+    res.status(500).json({ mensaje: "Error al eliminar reseña" });
   }
 };

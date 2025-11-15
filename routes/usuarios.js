@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const usuariosController = require("../controllers/usuarios.controller.js");
-const verificarToken = require("../middlewares/verificarToken.js");
+const ctrl = require("../controllers/usuarios.controller.js");
 
-// Rutas protegidas
-router.get("/", verificarToken, usuariosController.obtenerUsuarios);
-router.get("/:id", verificarToken, usuariosController.obtenerUsuarioPorId);
-router.put("/:id", verificarToken, usuariosController.actualizarUsuario);
-router.delete("/:id", verificarToken, usuariosController.eliminarUsuario);
+router.get("/", ctrl.obtenerUsuarios);
+router.get("/:id", ctrl.obtenerUsuarioPorId);
+router.put("/:id", ctrl.actualizarUsuario);
+router.delete("/:id", ctrl.eliminarUsuario);
 
 module.exports = router;
+

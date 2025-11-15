@@ -1,89 +1,60 @@
 const Juego = require("../models/Juego.js");
 
-// 📋 Obtener todos los juegos del usuario autenticado
+// Obtener TODOS los juegos
 exports.obtenerJuegos = async (req, res) => {
   try {
-    const juegos = await Juego.find({ usuario: req.usuario.id });
+    const juegos = await Juego.find();
     res.json(juegos);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener los juegos", error: error.message });
+    res.status(500).json({ mensaje: "Error al obtener juegos" });
   }
 };
 
-// 🔍 Obtener un juego por ID
+// Obtener 1 juego
 exports.obtenerJuegoPorId = async (req, res) => {
   try {
     const juego = await Juego.findById(req.params.id);
     if (!juego) return res.status(404).json({ mensaje: "Juego no encontrado" });
 
-    // Verificar que el juego pertenezca al usuario autenticado
-    if (juego.usuario.toString() !== req.usuario.id) {
-      return res.status(403).json({ mensaje: "No tienes permiso para ver este juego" });
-    }
+    res.json(juego);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al obtener juego" });
+  }
+};
+
+// Crear juego
+exports.crearJuego = async (req, res) => {
+  try {
+    const nuevoJuego = new Juego(req.body);
+    await nuevoJuego.save();
+
+    res.status(201).json(nuevoJuego);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al crear juego" });
+  }
+};
+
+// Editar juego
+exports.actualizarJuego = async (req, res) => {
+  try {
+    const juego = await Juego.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     res.json(juego);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener el juego", error: error.message });
+    res.status(500).json({ mensaje: "Error al editar juego" });
   }
 };
 
-// ✏️ Crear un nuevo juego
-exports.crearJuego = async (req, res) => {
-  try {
-    const { titulo, genero, plataforma, horasJugadas, estado, calificacion, imagen } = req.body;
-
-    const nuevoJuego = new Juego({
-      usuario: req.usuario.id,
-      titulo,
-      genero,
-      plataforma,
-      horasJugadas,
-      estado,
-      calificacion,
-      imagen
-    });
-
-    await nuevoJuego.save();
-    res.status(201).json({ mensaje: "Juego agregado correctamente", juego: nuevoJuego });
-  } catch (error) {
-    res.status(500).json({ mensaje: "Error al agregar el juego", error: error.message });
-  }
-};
-
-// 🧩 Actualizar juego
-exports.actualizarJuego = async (req, res) => {
-  try {
-    const juego = await Juego.findById(req.params.id);
-    if (!juego) return res.status(404).json({ mensaje: "Juego no encontrado" });
-
-    // Validar que solo el propietario pueda editar
-    if (juego.usuario.toString() !== req.usuario.id) {
-      return res.status(403).json({ mensaje: "No tienes permiso para editar este juego" });
-    }
-
-    const camposActualizados = req.body;
-    Object.assign(juego, camposActualizados);
-    await juego.save();
-
-    res.json({ mensaje: "Juego actualizado correctamente", juego });
-  } catch (error) {
-    res.status(500).json({ mensaje: "Error al actualizar el juego", error: error.message });
-  }
-};
-
-// 🗑️ Eliminar un juego
+// Eliminar juego
 exports.eliminarJuego = async (req, res) => {
   try {
-    const juego = await Juego.findById(req.params.id);
-    if (!juego) return res.status(404).json({ mensaje: "Juego no encontrado" });
-
-    if (juego.usuario.toString() !== req.usuario.id) {
-      return res.status(403).json({ mensaje: "No tienes permiso para eliminar este juego" });
-    }
-
-    await juego.deleteOne();
-    res.json({ mensaje: "Juego eliminado correctamente" });
+    await Juego.findByIdAndDelete(req.params.id);
+    res.json({ mensaje: "Juego eliminado" });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al eliminar el juego", error: error.message });
+    res.status(500).json({ mensaje: "Error al eliminar juego" });
   }
 };
+
+
